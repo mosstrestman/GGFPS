@@ -10,15 +10,12 @@ from .ggfps_sampling import (
     select_with_strategy,
 )
 from .krr_cv import evaluate_krr, rmse, run_cross_validation, tune_krr_hyperparameters
-from .simple_ggfps import ascending_ggfps, descending_ggfps
 from .simple_krr import simple_kfold_krr
 from .training_set_optimization import TrainingSetOptimizer, run_training_set_optimization
 
 __all__ = [
     "StyblinskiTangSystem",
     "TrainingSetOptimizer",
-    "ascending_ggfps",
-    "descending_ggfps",
     "evaluate_krr",
     "ggfps_from_distance_matrix",
     "ggfps_on_the_fly",

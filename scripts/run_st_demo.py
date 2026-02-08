@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument("--training-set-size", type=int, default=100)
     parser.add_argument("--beta", type=float, default=1.5, help="Single B value (default path).")
     parser.add_argument("--betas", type=float, nargs="*", default=None, help="Optional multi-B sweep values.")
-    parser.add_argument("--schedule", choices=["ascending", "descending"], default="ascending")
+    parser.add_argument("--schedule", choices=["ascending", "descending", "alternating"], default="ascending")
     parser.add_argument("--num-folds", type=int, default=5)
     parser.add_argument("--bootstraps", type=int, default=3)
     parser.add_argument("--seed", type=int, default=123)

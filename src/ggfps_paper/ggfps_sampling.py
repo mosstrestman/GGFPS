@@ -41,14 +41,12 @@ def _beta_for_step(step, total_steps, beta_start, beta_end, schedule):
         return beta_start + (beta_end - beta_start) * frac
     if schedule == "descending":
         return beta_end + (beta_start - beta_end) * frac
-    if schedule == "bounce":
-        return beta_start if step % 2 == 0 else beta_end
-    if schedule == "switch":
+    if schedule == "alternating":
         if step % 2 == 0:
             return beta_start + (beta_end - beta_start) * frac
         return beta_end - (beta_end - beta_start) * frac
 
-    raise ValueError("Unknown schedule. Use: ascending, descending, bounce, or switch.")
+    raise ValueError("Unknown schedule. Use: ascending, descending, or alternating.")
 
 
 def _choose_initial_index(gradients, beta0, initializer, rng, epsilon):

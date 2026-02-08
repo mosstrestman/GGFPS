@@ -9,7 +9,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from ggfps_paper.ggfps_sampling import ggfps_from_distance_matrix, ggfps_sweep, ggfps_sweep_descending
+from ggfps_paper.ggfps_sampling import (
+    ggfps_from_distance_matrix,
+    ggfps_sweep,
+    ggfps_sweep_descending,
+    select_with_strategy,
+)
 from ggfps_paper.kernels import pairwise_l2_distance
 
 
@@ -31,6 +36,24 @@ class SamplingTests(unittest.TestCase):
         indices = ggfps_sweep_descending(points=x, gradients=gradients, n_select=15, random_state=8)
         self.assertEqual(indices.shape, (15,))
         self.assertEqual(np.unique(indices).size, 15)
+
+    def test_alternating_sampling_returns_unique_indices(self):
+        rng = np.random.default_rng(10)
+        x = rng.normal(size=(55, 2))
+        gradients = np.linalg.norm(x, axis=1)
+
+        indices = select_with_strategy(
+            points=x,
+            gradients=gradients,
+            n_select=14,
+            beta_start=-1.0,
+            beta_end=1.0,
+            schedule="alternating",
+            initializer="probabilistic",
+            random_state=10,
+        )
+        self.assertEqual(indices.shape, (14,))
+        self.assertEqual(np.unique(indices).size, 14)
 
     def test_matrix_mode_runs(self):
         rng = np.random.default_rng(9)

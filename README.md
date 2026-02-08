@@ -1,71 +1,87 @@
 # GGFPS Paper Reference Repo
 
-Standalone, readable implementation of **Gradient Guided Furthest Point Sampling (GGFPS)** and KRR evaluation.
+Readable, runnable reference implementation of **Gradient Guided Furthest Point Sampling (GGFPS)**.
 
-This repository is focused on two goals:
-1. Make the GGFPS method easy to understand from code.
-2. Provide scripts that are immediately usable for experiments.
+The repository is built for two practical goals:
+- Understand the sampling method from code and equations.
+- Run training-set selection experiments with minimal setup.
 
-## Method Summary
+## What GGFPS Does
 
-Let:
-- `X = {x_i}` be descriptor vectors,
-- `g_i = ||F_i||_2` be gradient/force norms,
-- `T` be the selected training set,
-- `A` be the remaining candidates,
-- `d_j = min_{i in T} ||x_j - x_i||_2`.
+GGFPS extends Furthest Point Sampling (FPS) by combining:
+- geometric spread in descriptor space, and
+- gradient/force-norm information.
 
-### 1. Probabilistic initialization
-The first selected point is sampled with
+Given descriptor points `x_i`, gradient norms `g_i`, selected training set `T`, and remaining candidates `A`:
 
-`p_j = (g_j + eps)^{beta_0} / sum_l (g_l + eps)^{beta_0}`
+FPS distance term:
+```text
+d_j = min_{i in T} ||x_j - x_i||_2
+```
 
-where `eps` avoids zero-gradient issues.
+GGFPS initialization probability:
+```text
+p_j = (g_j + eps)^(beta_0) / sum_l (g_l + eps)^(beta_0)
+```
 
-### 2. Selection score at step `k`
-For each candidate `j in A`, compute
+GGFPS score at selection step `k`:
+```text
+s_j = (g_j + eps)^(beta_k) * d_j
+j*  = argmax_{j in A} s_j
+```
 
-`s_j = (g_j + eps)^{beta_k} * d_j`
+Distance update after selecting `j*`:
+```text
+d_j <- min(d_j, ||x_j - x_{j*}||_2)
+```
 
-and select
+Interpretation of `beta_k`:
+- `beta_k > 0`: prefers high-gradient regions.
+- `beta_k < 0`: prefers low-gradient regions.
+- `beta_k = 0`: recovers FPS behavior.
 
-`j* = argmax_j s_j`.
+## Schedules
 
-Then update the minimum-distance vector:
+Implemented schedules:
+- `ascending`: low-gradient bias to high-gradient bias.
+- `descending`: high-gradient bias to low-gradient bias.
+- `alternating`: alternates schedule endpoints across steps (paper-aligned naming).
 
-`d_j <- min(d_j, ||x_j - x_{j*}||_2)`.
-
-Repeat until the target training set size is reached.
-
-### 3. Schedule meaning
-- `beta_k > 0`: biases toward high-gradient regions.
-- `beta_k < 0`: biases toward low-gradient regions.
-- `beta_k = 0`: recovers standard FPS behavior.
-
-This repo provides ascending and descending schedules directly, and switch/bounce options in the sampler API.
+Removed schedules:
+- `bounce` is intentionally not included.
 
 ## Distance Strategy
 
-This implementation follows the workflow you requested:
+Distance handling follows the intended workflow:
+- Single-`B` run: on-the-fly distances (default).
+- Multi-`B` run: one labeled distance matrix is built, reused, and optionally cached.
 
-- **Single-B runs**: use **on-the-fly distances** (default).
-- **Multi-B runs**: build one labeled distance matrix and reuse/cache it.
+Code path: `src/ggfps_paper/training_set_optimization.py`.
 
-That logic is implemented in `src/ggfps_paper/training_set_optimization.py`.
+## Why Two Demo Scripts
 
-## Why Two Demo Scripts?
+`scripts/run_st_simple_demo.py`:
+- smallest readable path,
+- one split, one `B`, on-the-fly sampling,
+- best for learning and quick checks.
 
-Both are intentional and target different use cases:
+`scripts/run_st_demo.py`:
+- experiment workflow,
+- bootstraps + optional multi-`B` sweep,
+- matrix caching for repeated `B` evaluations.
 
-- `scripts/run_st_simple_demo.py`
-  - Minimal learning script.
-  - Single split, single B, on-the-fly distances.
-  - Best for understanding and quick sanity checks.
+## Figures
 
-- `scripts/run_st_demo.py`
-  - Experiment script.
-  - Bootstraps, multi-B sweeps, and matrix caching for repeated runs.
-  - Best for paper-style evaluations.
+### Method Illustration
+![GGFPS method figure](assets/figures/methods_plot.png)
+
+### Concept Illustration
+![GGFPS introduction figure](assets/figures/intro_plot.png)
+
+### ST Learning Curve
+![ST learning curve](assets/figures/st_MAE_LC_pcovfpse.png)
+
+PDF versions are also available in `assets/figures/`.
 
 ## Installation
 
@@ -78,8 +94,7 @@ pip install -e .
 
 ## Quick Start
 
-### Minimal demo
-
+Simple run:
 ```bash
 python3 scripts/run_st_simple_demo.py \
   --schedule ascending \
@@ -89,8 +104,7 @@ python3 scripts/run_st_simple_demo.py \
   --beta 1.5
 ```
 
-### Full experiment demo (single B, on-the-fly)
-
+Experiment run (single `B`, on-the-fly):
 ```bash
 python3 scripts/run_st_demo.py \
   --schedule ascending \
@@ -100,8 +114,7 @@ python3 scripts/run_st_demo.py \
   --bootstraps 3
 ```
 
-### Full experiment demo (multi-B, cached distance matrix)
-
+Experiment run (multi-`B`, cached matrix):
 ```bash
 python3 scripts/run_st_demo.py \
   --schedule ascending \
@@ -117,28 +130,9 @@ python3 scripts/run_st_demo.py \
 python3 -m unittest discover -s tests
 ```
 
-## Project Layout
+## Main Files
 
-```text
-ggfps_paper_repo/
-  assets/figures/
-  scripts/
-    run_st_demo.py
-    run_st_simple_demo.py
-  src/ggfps_paper/
-    datasets.py
-    experiment_runner.py
-    ggfps_sampling.py
-    kernels.py
-    krr_cv.py
-    simple_ggfps.py
-    simple_krr.py
-    training_set_optimization.py
-  tests/
-```
-
-## Main API Entry Points
-
-- `ggfps_on_the_fly(...)` and `ggfps_from_distance_matrix(...)` in `src/ggfps_paper/ggfps_sampling.py`
-- `TrainingSetOptimizer` in `src/ggfps_paper/training_set_optimization.py`
-- `run_ggfps_experiment(...)` in `src/ggfps_paper/experiment_runner.py`
+- `src/ggfps_paper/ggfps_sampling.py`: GGFPS samplers (on-the-fly + matrix modes).
+- `src/ggfps_paper/training_set_optimization.py`: training-set selection + KRR evaluation.
+- `src/ggfps_paper/experiment_runner.py`: repeated experiment loops.
+- `src/ggfps_paper/krr_cv.py`: KRR tuning and evaluation.
