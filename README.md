@@ -58,6 +58,44 @@ Distance handling follows the intended workflow:
 
 Code path: `src/ggfps_paper/training_set_optimization.py`.
 
+## Class API
+
+Import and instantiate explicit sampler variants:
+
+```python
+from ggfps_paper import GGFPSampler
+
+# on-the-fly distances
+sampler = GGFPSampler.ascending_on_the_fly()
+
+# precomputed distance matrix
+sampler = GGFPSampler.descending_with_distance_matrix(distance_matrix)
+```
+
+Run single-`B` selection:
+
+```python
+indices = sampler.sample_for_beta(
+    points=X,              # not used in distance-matrix mode
+    gradients=g,
+    n_select=100,
+    beta=1.5,
+    random_state=0,
+)
+```
+
+Run multi-`B` selection with one sampler instance:
+
+```python
+beta_to_indices = sampler.sample_for_betas(
+    points=X,
+    gradients=g,
+    n_select=100,
+    beta_values=[0.5, 1.0, 1.5],
+    random_state=0,
+)
+```
+
 ## Why Two Demo Scripts
 
 `scripts/run_st_simple_demo.py`:
@@ -132,7 +170,6 @@ python3 -m unittest discover -s tests
 
 ## Main Files
 
-- `src/ggfps_paper/ggfps_sampling.py`: GGFPS samplers (on-the-fly + matrix modes).
+- `src/ggfps_paper/ggfps_sampling.py`: `GGFPSampler` class (on-the-fly + matrix modes).
 - `src/ggfps_paper/training_set_optimization.py`: training-set selection + KRR evaluation.
-- `src/ggfps_paper/experiment_runner.py`: repeated experiment loops.
 - `src/ggfps_paper/krr_cv.py`: KRR tuning and evaluation.

@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .ggfps_sampling import select_with_strategy
+from .ggfps_sampling import GGFPSampler
 from .kernels import pairwise_l2_distance
 from .krr_cv import evaluate_krr, run_cross_validation
 
@@ -47,7 +47,6 @@ class TrainingSetOptimizer:
         gradient_biases,
         kernel_fn=None,
         schedule="ascending",
-        initializer="probabilistic",
         random_state=None,
         distance_matrix=None,
         distance_cache_path=None,
@@ -61,8 +60,7 @@ class TrainingSetOptimizer:
         self.bounds = dict(bounds)
         self.gradient_biases = list(gradient_biases)
         self.kernel_fn = kernel_fn
-        self.schedule = schedule
-        self.initializer = initializer
+        self.schedule = str(schedule)
         self.random_state = random_state
         self.distance_matrix = None if distance_matrix is None else np.asarray(distance_matrix, dtype=float)
         self.distance_cache_path = distance_cache_path
@@ -105,20 +103,23 @@ class TrainingSetOptimizer:
 
         return self.distance_matrix
 
+    def _build_sampler(self):
+        distance_matrix = self._get_distance_matrix_if_needed()
+        if distance_matrix is None:
+            return GGFPSampler.on_the_fly(schedule=self.schedule)
+        return GGFPSampler.with_distance_matrix(distance_matrix=distance_matrix, schedule=self.schedule)
+
     def _select_training_indices(self, grad_bias):
         beta_start, beta_end = _bias_to_bounds(grad_bias)
-        distance_matrix = self._get_distance_matrix_if_needed()
+        sampler = self._build_sampler()
 
-        relative_indices = select_with_strategy(
+        relative_indices = sampler.sample(
             points=self._sampling_points,
             gradients=self._sampling_gradients,
             n_select=self.training_set_size,
             beta_start=beta_start,
             beta_end=beta_end,
-            schedule=self.schedule,
-            initializer=self.initializer,
             random_state=self.random_state,
-            distance_matrix=distance_matrix,
         )
 
         return self.labeled_indices[relative_indices]
@@ -188,7 +189,6 @@ class TrainingSetOptimizer:
             "bounds": self.bounds,
             "n_dims": int(self.x.shape[1]),
             "schedule": self.schedule,
-            "initializer": self.initializer,
             "sampling_mode": mode,
         }
 
@@ -229,7 +229,6 @@ def run_training_set_optimization(
     gradient_biases,
     kernel_fn=None,
     schedule="ascending",
-    initializer="probabilistic",
     num_folds=5,
     random_state=None,
     distance_matrix=None,
@@ -247,7 +246,6 @@ def run_training_set_optimization(
         gradient_biases=gradient_biases,
         kernel_fn=kernel_fn,
         schedule=schedule,
-        initializer=initializer,
         random_state=random_state,
         distance_matrix=distance_matrix,
         distance_cache_path=distance_cache_path,

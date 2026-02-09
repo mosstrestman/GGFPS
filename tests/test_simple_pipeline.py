@@ -10,7 +10,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from ggfps_paper.datasets import StyblinskiTangSystem, random_labeled_unlabeled_split
-from ggfps_paper.ggfps_sampling import select_with_strategy
+from ggfps_paper.ggfps_sampling import GGFPSampler
 from ggfps_paper.simple_krr import simple_kfold_krr
 
 
@@ -19,14 +19,12 @@ class SimplePipelineTests(unittest.TestCase):
         system = StyblinskiTangSystem(n_dims=2, n_points=400, seed=3)
         labeled_indices, test_indices = random_labeled_unlabeled_split(400, 200, random_state=3)
 
-        training_relative = select_with_strategy(
+        sampler = GGFPSampler.ascending_on_the_fly()
+        training_relative = sampler.sample_for_beta(
             points=system.x[labeled_indices],
             gradients=system.gradient_norms[labeled_indices],
             n_select=60,
-            beta_start=-1.5,
-            beta_end=1.5,
-            schedule="ascending",
-            initializer="probabilistic",
+            beta=1.5,
             random_state=3,
         )
         training_indices = labeled_indices[training_relative]

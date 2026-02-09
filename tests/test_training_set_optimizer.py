@@ -33,7 +33,6 @@ class TrainingSetOptimizerTests(unittest.TestCase):
             },
             gradient_biases=[1.5],
             schedule="ascending",
-            initializer="probabilistic",
             random_state=11,
         )
 
@@ -63,7 +62,6 @@ class TrainingSetOptimizerTests(unittest.TestCase):
                 },
                 gradient_biases=[0.5, 1.5],
                 schedule="ascending",
-                initializer="probabilistic",
                 random_state=12,
                 distance_cache_path=cache_path,
             )

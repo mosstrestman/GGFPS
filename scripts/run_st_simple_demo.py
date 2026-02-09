@@ -14,7 +14,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from ggfps_paper.datasets import StyblinskiTangSystem, random_labeled_unlabeled_split
-from ggfps_paper.ggfps_sampling import select_with_strategy
+from ggfps_paper.ggfps_sampling import GGFPSampler
 from ggfps_paper.simple_krr import simple_kfold_krr
 
 
@@ -40,17 +40,13 @@ def main():
         random_state=args.seed,
     )
 
-    labeled_points = st_system.x[labeled_indices]
-    labeled_gradients = st_system.gradient_norms[labeled_indices]
+    sampler = GGFPSampler.on_the_fly(schedule=args.schedule)
 
-    selected_relative = select_with_strategy(
-        points=labeled_points,
-        gradients=labeled_gradients,
+    selected_relative = sampler.sample_for_beta(
+        points=st_system.x[labeled_indices],
+        gradients=st_system.gradient_norms[labeled_indices],
         n_select=args.training_set_size,
-        beta_start=-float(args.beta),
-        beta_end=float(args.beta),
-        schedule=args.schedule,
-        initializer="probabilistic",
+        beta=float(args.beta),
         random_state=args.seed,
     )
 
@@ -71,7 +67,7 @@ def main():
         "schedule": args.schedule,
         "beta": args.beta,
         "training_set_size": args.training_set_size,
-        "sampling_mode": "on_the_fly",
+        "sampling_mode": sampler.mode,
         "test_mae": result["test_mae"],
         "val_mae": result["val_mae"],
         "opt_width": result["opt_width"],

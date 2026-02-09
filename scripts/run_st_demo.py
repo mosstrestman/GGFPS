@@ -20,7 +20,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from ggfps_paper.datasets import StyblinskiTangSystem
-from ggfps_paper.experiment_runner import run_ggfps_experiment
+from ggfps_paper.training_set_optimization import TrainingSetOptimizer
 
 
 def parse_args():
@@ -60,7 +60,6 @@ def main():
     args = parse_args()
 
     st_system = StyblinskiTangSystem(n_dims=2, n_points=args.n_points, seed=args.seed)
-
     betas = [args.beta] if not args.betas else [float(value) for value in args.betas]
 
     bounds = {
@@ -69,21 +68,41 @@ def main():
         "search_density": 12,
     }
 
-    records = run_ggfps_experiment(
-        x=st_system.x,
-        y=st_system.y,
-        gradient_norms=st_system.gradient_norms,
-        labeled_size=args.labeled_size,
-        training_set_sizes=[args.training_set_size],
-        gradient_biases=betas,
-        bounds=bounds,
-        num_folds=args.num_folds,
-        n_bootstraps=args.bootstraps,
-        schedule=args.schedule,
-        initializer="probabilistic",
-        random_state=args.seed,
-        distance_cache_dir=args.distance_cache_dir,
-    )
+    rng = np.random.default_rng(args.seed)
+    all_indices = np.arange(st_system.y.size)
+
+    multi_b = len(betas) > 1
+    if multi_b:
+        args.distance_cache_dir.mkdir(parents=True, exist_ok=True)
+
+    records = []
+    for bootstrap_index in range(args.bootstraps):
+        labeled_indices = rng.choice(all_indices, size=args.labeled_size, replace=False)
+        test_indices = np.setdiff1d(all_indices, labeled_indices, assume_unique=False)
+
+        distance_cache_path = None
+        if multi_b:
+            distance_cache_path = args.distance_cache_dir / f"labeled_{args.labeled_size}_bootstrap_{bootstrap_index}.npy"
+
+        optimizer = TrainingSetOptimizer(
+            x=st_system.x,
+            y=st_system.y,
+            gradient_norms=st_system.gradient_norms,
+            labeled_indices=labeled_indices,
+            training_set_size=args.training_set_size,
+            test_indices=test_indices,
+            bounds=bounds,
+            gradient_biases=betas,
+            schedule=args.schedule,
+            random_state=int(rng.integers(1, 1_000_000_000)),
+            distance_cache_path=distance_cache_path,
+        )
+        result = optimizer.evaluate(num_folds=args.num_folds)
+        result["bootstrap"] = bootstrap_index
+        result["labeled_size"] = args.labeled_size
+        if distance_cache_path is not None:
+            result["distance_cache_path"] = str(distance_cache_path)
+        records.append(result)
 
     test_maes = np.asarray([record["test_mae"] for record in records], dtype=float)
     val_maes = np.asarray([record["val_mae"] for record in records], dtype=float)
