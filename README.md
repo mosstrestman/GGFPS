@@ -23,7 +23,7 @@ $p_j = \frac{(g_j + \varepsilon)^{\beta_0}}{\sum_{\ell}(g_{\ell} + \varepsilon)^
 GGFPS score at selection step `k`:
 $s_j = (g_j + \varepsilon)^{\beta_k} d_j$
 
-$j^{*} = \operatorname*{argmax}_{j \in A} s_j$
+$j^{*} = \arg\max_{j \in A} s_j$
 
 Distance update after selecting `j*`:
 $d_j \leftarrow \min\left(d_j, \lVert x_j - x_{j^{*}} \rVert_2\right)$
