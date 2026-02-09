@@ -12,33 +12,35 @@ GGFPS extends Furthest Point Sampling (FPS) by combining:
 - geometric spread in descriptor space, and
 - gradient/force-norm information.
 
-Given descriptor points `x_i`, gradient norms `g_i`, selected training set `T`, and remaining candidates `A`:
+Given descriptor points $x_i$, gradient norms $g_i$, selected training set $T$, and remaining candidates $A$:
 
 FPS distance term:
-```text
-d_j = min_{i in T} ||x_j - x_i||_2
-```
+$$
+d_j = \min_{i \in T} \lVert x_j - x_i \rVert_2
+$$
 
 GGFPS initialization probability:
-```text
-p_j = (g_j + eps)^(beta_0) / sum_l (g_l + eps)^(beta_0)
-```
+$$
+p_j = \frac{(g_j + \varepsilon)^{\beta_0}}{\sum_{\ell}(g_{\ell} + \varepsilon)^{\beta_0}}
+$$
 
 GGFPS score at selection step `k`:
-```text
-s_j = (g_j + eps)^(beta_k) * d_j
-j*  = argmax_{j in A} s_j
-```
+$$
+s_j = (g_j + \varepsilon)^{\beta_k} d_j
+$$
+$$
+j^{*} = \operatorname*{argmax}_{j \in A} s_j
+$$
 
 Distance update after selecting `j*`:
-```text
-d_j <- min(d_j, ||x_j - x_{j*}||_2)
-```
+$$
+d_j \leftarrow \min\!\left(d_j, \lVert x_j - x_{j^{*}} \rVert_2\right)
+$$
 
-Interpretation of `beta_k`:
-- `beta_k > 0`: prefers high-gradient regions.
-- `beta_k < 0`: prefers low-gradient regions.
-- `beta_k = 0`: recovers FPS behavior.
+Interpretation of $\beta_k$:
+- $\beta_k > 0$: prefers high-gradient regions.
+- $\beta_k < 0$: prefers low-gradient regions.
+- $\beta_k = 0$: recovers FPS behavior.
 
 ## Schedules
 
