@@ -15,27 +15,17 @@ GGFPS extends Furthest Point Sampling (FPS) by combining:
 Given descriptor points $x_i$, gradient norms $g_i$, selected training set $T$, and remaining candidates $A$:
 
 FPS distance term:
-$$
-d_j = \min_{i \in T} \lVert x_j - x_i \rVert_2
-$$
+$d_j = \min_{i \in T} \lVert x_j - x_i \rVert_2$
 
 GGFPS initialization probability:
-$$
-p_j = \frac{(g_j + \varepsilon)^{\beta_0}}{\sum_{\ell}(g_{\ell} + \varepsilon)^{\beta_0}}
-$$
+$p_j = \frac{(g_j + \varepsilon)^{\beta_0}}{\sum_{\ell}(g_{\ell} + \varepsilon)^{\beta_0}}$
 
 GGFPS score at selection step `k`:
-$$
-s_j = (g_j + \varepsilon)^{\beta_k} d_j
-$$
-$$
-j^{*} = \operatorname*{argmax}_{j \in A} s_j
-$$
+$s_j = (g_j + \varepsilon)^{\beta_k} d_j$
+$j^{*} = \operatorname*{argmax}_{j \in A} s_j$
 
 Distance update after selecting `j*`:
-$$
-d_j \leftarrow \min\!\left(d_j, \lVert x_j - x_{j^{*}} \rVert_2\right)
-$$
+$d_j \leftarrow \min\!\left(d_j, \lVert x_j - x_{j^{*}} \rVert_2\right)$
 
 Interpretation of $\beta_k$:
 - $\beta_k > 0$: prefers high-gradient regions.
