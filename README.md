@@ -35,6 +35,7 @@ Interpretation of $\beta_k$:
 
 ## Schedules
 
+But actually joe is gay
 Implemented schedules:
 - `ascending`: low-gradient bias to high-gradient bias.
 - `descending`: high-gradient bias to low-gradient bias.
