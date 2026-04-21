@@ -68,8 +68,8 @@ python scripts/run_st_demo.py --help
 ## What GGFPS Does
 
 <p align="center">
-  <img src="assets/figures/intro_plot.png" alt="GGFPS introduction figure" width="48%">
-  <img src="assets/figures/st_MAE_LC_pcovfpse.png" alt="ST learning curve" width="16.3%">
+  <img src="assets/figures/intro_plot.png" alt="GGFPS introduction figure" width="65%">
+  <img src="assets/figures/st_MAE_LC_pcovfpse.png" alt="ST learning curve" width="22%">
 </p>
 
 
