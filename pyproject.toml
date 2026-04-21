@@ -1,23 +1,60 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ggfps-paper"
 version = "0.1.0"
-description = "Reference implementation of GGFPS sampling and KRR workflows"
+description = "Installable reference implementation of Gradient Guided Furthest Point Sampling (GGFPS) for training-set selection and kernel ridge regression experiments"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
   { name = "GGFPS Contributors" }
 ]
+keywords = [
+  "ggfps",
+  "gradient guided furthest point sampling",
+  "furthest point sampling",
+  "training set selection",
+  "kernel ridge regression",
+  "scientific computing",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
   "numpy>=1.24"
 ]
 
+[project.urls]
+Homepage = "https://github.com/mosstrestman/GGFPS"
+Repository = "https://github.com/mosstrestman/GGFPS"
+Documentation = "https://github.com/mosstrestman/GGFPS/tree/main/docs"
+Issues = "https://github.com/mosstrestman/GGFPS/issues"
+
+[project.scripts]
+ggfps = "ggfps_paper.cli:main"
+ggfps-demo = "ggfps_paper.cli:demo_main"
+ggfps-simple-demo = "ggfps_paper.cli:simple_demo_main"
+
 [project.optional-dependencies]
 dev = [
+  "build>=1.2.2",
   "ruff>=0.6.0"
+]
+docs = [
+  "mkdocs>=1.6"
 ]
 
 [tool.setuptools]

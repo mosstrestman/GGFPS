@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Run tests
+        run: python -m unittest discover -s tests
+
+      - name: Smoke-test CLI
+        run: |
+          python -m ggfps_paper simple-demo \
+            --n-points 200 \
+            --labeled-size 100 \
+            --training-set-size 40 \
+            --num-folds 4 \
+            --seed 7

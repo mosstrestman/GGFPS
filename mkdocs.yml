@@ -1,0 +1,12 @@
+site_name: GGFPS
+site_description: Gradient Guided Furthest Point Sampling (GGFPS) reference implementation and demos
+site_url: https://mosstrestman.github.io/GGFPS/
+repo_url: https://github.com/mosstrestman/GGFPS
+repo_name: mosstrestman/GGFPS
+docs_dir: docs
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Overview: api.md
+markdown_extensions:
+  - tables
